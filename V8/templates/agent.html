@@ -1,0 +1,155 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Business Analyst - Customer Feedback Intelligence</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 1000px; margin: 30px auto; padding: 0 16px; background: #f5f7fa; color: #222; }
+    h1 { font-size: 1.6rem; }
+    .card { background: #fff; border-radius: 8px; padding: 16px; margin-top: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+    .btn { display: inline-block; background: #0b5cad; color: #fff; padding: 8px 16px; border-radius: 6px; text-decoration: none; margin-right: 8px; }
+    button { padding: 8px 14px; font-size: 1rem; cursor: pointer; }
+    input[type=text] { flex: 1; padding: 10px; font-size: 1rem; }
+    .small { color: #666; font-size: .9rem; }
+    .badge { display: inline-block; background: #e8eef7; padding: 3px 10px; border-radius: 12px; font-size: .85rem; margin-right: 6px; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+    .chip { background: #fff; border: 1px solid #d9e1ea; border-radius: 999px; padding: 5px 12px; font-size: .82rem; }
+    .chip:hover { border-color: #1d4ed8; background: #e3ebfd; }
+    #log { max-height: 560px; overflow-y: auto; }
+    .msg { padding: 10px 12px; border-radius: 8px; margin: 10px 0; white-space: pre-wrap; line-height: 1.45; }
+    .user { background: #e3ebfd; margin-left: 60px; }
+    .bot { background: #f0f3f8; margin-right: 20px; }
+    .err { background: #fdecea; color: #c62828; }
+    .hint { color: #666; font-size: .9rem; }
+    .row { display: flex; gap: 8px; margin-top: 12px; }
+    table { border-collapse: collapse; width: 100%; font-size: .82rem; margin: 6px 0 14px; background: #fff; }
+    th, td { text-align: left; padding: 4px 8px; border-bottom: 1px solid #e5e5e5; vertical-align: top; word-break: break-all; }
+    th { background: #f0f3f8; }
+    .ok { color: #1a7f37; font-weight: bold; } .bad { color: #c62828; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" href="/static/theme.css">
+</head>
+<body>
+  <p><a class="btn" href="/">Back to dashboard</a><a class="btn" href="/rag/{{ download_id }}">RAG Assistant</a></p>
+  <h1>AI Business Analyst (agent)</h1>
+  <p class="small">
+    The model chooses tools; Python runs them on your {{ size }} uploaded reviews. Every number comes from a tool result.
+    Agent backend: <span class="badge">{{ backend }}</span>
+    Retrieval: <span class="badge">all-MiniLM-L6-v2 + FAISS</span>
+  </p>
+
+  <div class="card">
+    <div class="chips" id="chips"></div>
+    <div id="log"><div class="hint" id="hint">Ask a question. Each answer shows which tools were executed, with status and duration.</div></div>
+    <div class="row">
+      <input type="text" id="q" maxlength="500" placeholder="e.g. Which product needs the most attention and why?">
+      <button type="button" id="send">Ask</button>
+      <button type="button" id="clear">Clear</button>
+    </div>
+    <p class="small">AI-generated text. Complaint categories are rule-based keywords, and similarity search measures topic, not complaints. Check quotes against the data.</p>
+  </div>
+
+  <script>
+    const askUrl = {{ ('/agent/' ~ download_id ~ '/ask')|tojson }};
+    const products = {{ products|tojson }};
+    const $ = id => document.getElementById(id);
+    let history = [];
+
+    function add(tag, text, parent, cls) {
+      const el = document.createElement(tag);
+      el.textContent = text;
+      if (cls) el.className = cls;
+      parent.appendChild(el);
+      return el;
+    }
+
+    function traceTable(trace, rounds, backend) {
+      const wrap = document.createElement("div");
+      add("div", "Execution trace (" + trace.length + " tool call(s), " + rounds + " model round(s))", wrap, "small");
+      if (trace.length) {
+        const t = document.createElement("table");
+        const head = document.createElement("tr");
+        ["Round", "Tool", "Status", "Duration", "Arguments"].forEach(h => add("th", h, head));
+        t.appendChild(head);
+        trace.forEach(r => {
+          const tr = document.createElement("tr");
+          add("td", String(r.round), tr);
+          add("td", r.tool, tr);
+          add("td", r.status.toUpperCase(), tr, r.status === "ok" ? "ok" : "bad");
+          add("td", Number(r.duration_ms).toFixed(1) + " ms", tr);
+          add("td", r.arguments, tr);
+          t.appendChild(tr);
+        });
+        wrap.appendChild(t);
+      } else {
+        add("div", "No tools were needed for this question.", wrap, "small");
+      }
+      return wrap;
+    }
+
+    const log = $("log");
+    function bubble(kind, text) {
+      const h = $("hint"); if (h) h.remove();
+      const el = add("div", text, log, "msg " + kind);
+      log.scrollTop = log.scrollHeight;
+      return el;
+    }
+
+    const examples = [
+      "Which product needs the most attention? Compare KPIs, complaints and show customer quotes.",
+      "What are the main complaint categories overall?",
+      "What do customers say about " + (products[0] || "our products") + "?",
+      "Average the average scores of all products."
+    ];
+    examples.forEach(q => {
+      const c = add("button", q, $("chips"), "chip");
+      c.type = "button";
+      c.addEventListener("click", () => { $("q").value = q; send(); });
+    });
+
+    async function send() {
+      const q = $("q").value.trim();
+      if (!q || $("send").disabled) return;
+      $("q").value = "";
+      bubble("user", q);
+      const waiting = bubble("bot", "Working... the agent may run several tools (5 to 25 seconds).");
+      $("send").disabled = true;
+      try {
+        const resp = await fetch(askUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: q, history: history.slice(-12) })
+        });
+        const data = await resp.json();
+        if (!resp.ok || data.error) {
+          waiting.className = "msg err";
+          waiting.textContent = data.error || "Could not get an answer.";
+        } else {
+          waiting.textContent = data.answer;
+          history.push({ role: "user", content: q });
+          history.push({ role: "assistant", content: data.answer });
+        }
+        if (data.trace) log.appendChild(traceTable(data.trace, data.rounds || 0, data.backend || ""));
+      } catch (e) {
+        waiting.className = "msg err";
+        waiting.textContent = "Could not reach the server.";
+      }
+      $("send").disabled = false;
+      $("q").focus();
+      log.scrollTop = log.scrollHeight;
+    }
+
+    $("send").addEventListener("click", send);
+    $("q").addEventListener("keydown", e => { if (e.key === "Enter") send(); });
+    $("clear").addEventListener("click", () => {
+      history = [];
+      log.replaceChildren();
+      add("div", "Conversation cleared. Ask a new question.", log, "hint").id = "hint";
+    });
+  </script>
+  <script src="/static/theme.js"></script>
+</body>
+</html>
+
+

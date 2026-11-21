@@ -1,0 +1,139 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Predictive Analytics - Customer Feedback Intelligence</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 1000px; margin: 30px auto; padding: 0 16px; background: #f5f7fa; color: #222; }
+    h1 { font-size: 1.6rem; }
+    .card { background: #fff; border-radius: 8px; padding: 16px; margin-top: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+    .btn { display: inline-block; background: #0b5cad; color: #fff; padding: 8px 16px; border-radius: 6px; text-decoration: none; margin-right: 8px; }
+    button, select { padding: 8px 14px; font-size: 1rem; }
+    input[type=text] { width: 100%; padding: 10px; font-size: 1rem; box-sizing: border-box; }
+    .small { color: #666; font-size: .9rem; }
+    .warn { color: #b26a00; }
+    .badge { display: inline-block; background: #e8eef7; padding: 3px 10px; border-radius: 12px; font-size: .85rem; margin-right: 6px; }
+    table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e5e5e5; vertical-align: top; }
+    th { background: #f0f3f8; }
+    .high { color: #c62828; font-weight: bold; } .medium { color: #b26a00; font-weight: bold; } .low { color: #1a7f37; font-weight: bold; }
+    .chart-box { position: relative; height: 300px; }
+    .table-wrap { overflow-x: auto; }
+  </style>
+  <link rel="stylesheet" href="/static/theme.css">
+</head>
+<body>
+  <p><a class="btn" href="/">Back to dashboard</a></p>
+  <h1>Predictive analytics</h1>
+  <p class="small">All predictions are estimates, not facts. Sentiment labels used: {% for b in backends %}<span class="badge">{{ b }}</span>{% endfor %}</p>
+
+  <div class="card">
+    <h2>A. Product risk score</h2>
+    <p class="small">{{ risk_method }} Weights and levels are my own choices, not a scientific standard.</p>
+    <div class="table-wrap"><table>
+      <tr><th>Product</th><th>Risk</th><th>Level</th><th>Reviews</th><th>% Negative</th><th>Avg score</th><th>Complaint categories</th><th>Confidence</th></tr>
+      {% for r in risk %}
+      <tr><td><strong>{{ r.product }}</strong></td><td>{{ r.risk_score }}</td><td class="{{ r.risk_level }}">{{ r.risk_level|upper }}</td>
+        <td>{{ r.reviews }}</td><td>{{ r.negative_pct }}%</td><td>{{ r.avg_score }}</td>
+        <td>{{ r.complaint_categories|join(', ') or 'none' }}</td><td>{{ r.confidence }}</td></tr>
+      {% endfor %}
+    </table></div>
+  </div>
+
+  <div class="card">
+    <h2>C. Trend forecast (next week, negative %)</h2>
+    <label for="tsel">Product: </label>
+    <select id="tsel">{% for name in trends %}<option>{{ name }}</option>{% endfor %}</select>
+    <div id="tinfo" class="small" style="margin:10px 0"></div>
+    <div class="chart-box"><canvas id="tchart"></canvas></div>
+  </div>
+  <div class="card">
+    <h2>B. Predict the sentiment of a new review</h2>
+    {% if info %}
+    <p class="small">{{ info.method }}</p>
+    <p class="small">Trained on {{ info.unique_reviews }} unique reviews. Cross-validated accuracy {{ info.cv_accuracy }}
+      (always guessing the biggest class gives {{ info.baseline_accuracy }}). Classes: {{ info.classes|join(', ') }}.
+      {% if info.dropped_classes %}<span class="warn">Dropped (too few examples): {{ info.dropped_classes|join(', ') }}.</span>{% endif %}
+      With this little data the accuracy is only a rough guide.</p>
+    <input type="text" id="rtext" maxlength="1000" placeholder="Type a new customer review...">
+    <p><button type="button" id="rbtn">Predict</button></p>
+    <div id="rout"></div>
+    {% else %}
+    <p class="warn">Predictor not trained: {{ pred_reason }}</p>
+    {% endif %}
+  </div>
+
+  <script src="{{ url_for('static', filename='chart.umd.min.js') }}"></script>
+  <script>
+    const trends = {{ trends|tojson }};
+    const reviewUrl = {{ ('/predict/' ~ download_id ~ '/review')|tojson }};
+    const $ = id => document.getElementById(id);
+    let chart = null;
+
+    function drawTrend() {
+      const entry = trends[$("tsel").value];
+      const info = $("tinfo");
+      if (chart) { chart.destroy(); chart = null; }
+      const res = entry.result;
+      if (!res) { info.textContent = "No forecast: " + entry.reason; info.className = "small warn"; return; }
+      const labels = res.series.map(s => s.week).concat(["next week"]);
+      const actual = res.series.map(s => s.negative_pct).concat([null]);
+      const fc = res.series.map(() => null);
+      fc[fc.length - 1] = res.series[res.series.length - 1].negative_pct;
+      fc.push(res.next_week_negative_pct);
+      info.className = "small" + (res.trend_strength === "weak" ? " warn" : "");
+      info.textContent = "Trend: " + res.direction + " (slope " + res.slope_per_week + " points/week, R2 " + res.r_squared +
+        ", " + res.trend_strength + "). Next week estimate " + res.next_week_negative_pct + "%, rough range " +
+        res.rough_range[0] + " to " + res.rough_range[1] + "%. " +
+        (res.trend_strength === "weak" ? "The trend is weak: weekly values are noisy, so treat this estimate with great caution. " : "") +
+        res.method;
+      chart = new Chart($("tchart"), {
+        type: "line",
+        data: { labels: labels, datasets: [
+          { label: "Weekly negative %", data: actual, borderColor: "#c62828", tension: 0.2 },
+          { label: "Forecast", data: fc, borderColor: "#0b5cad", borderDash: [6, 4] } ] },
+        options: { maintainAspectRatio: false, devicePixelRatio: Math.max(window.devicePixelRatio || 1, 2), scales: { y: { min: 0, max: 100 } } }
+      });
+    }
+    $("tsel").addEventListener("change", drawTrend);
+    drawTrend();
+
+    const rbtn = $("rbtn");
+    if (rbtn) {
+      async function predict() {
+        const text = $("rtext").value.trim();
+        const out = $("rout");
+        out.replaceChildren();
+        if (!text) { out.textContent = "Please type a review."; return; }
+        rbtn.disabled = true;
+        try {
+          const resp = await fetch(reviewUrl, { method: "POST", headers: { "Content-Type": "application/json" },
+                                                body: JSON.stringify({ text: text }) });
+          const data = await resp.json();
+          if (!resp.ok) { out.textContent = data.error || "Could not predict."; }
+          else {
+            const p = document.createElement("p");
+            p.textContent = "Predicted: " + data.label.toUpperCase() + " (confidence " + data.confidence + "). " +
+              Object.entries(data.probabilities).map(e => e[0] + " " + e[1]).join(", ") + ".";
+            out.appendChild(p);
+            if (data.low_confidence) {
+              const w = document.createElement("p");
+              w.className = "warn";
+              w.textContent = "Low confidence: the model is not sure. Do not rely on this label.";
+              out.appendChild(w);
+            }
+          }
+        } catch (e) { out.textContent = "Could not reach the server."; }
+        rbtn.disabled = false;
+      }
+      rbtn.addEventListener("click", predict);
+      $("rtext").addEventListener("keydown", e => { if (e.key === "Enter") predict(); });
+    }
+  </script>
+  <script src="/static/theme.js"></script>
+</body>
+</html>
+
+
+

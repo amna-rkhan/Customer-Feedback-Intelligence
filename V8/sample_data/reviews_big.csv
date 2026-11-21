@@ -1,0 +1,181 @@
+customer_id,product,feedback,date
+3001,Laptop,"Impressed, it is light to carry and delivery was quick.",2026-09-04
+3002,Phone,"Very happy, setup was easy and support was helpful.",2026-09-03
+3003,Headphones,"Very happy, the noise cancelling is great and delivery was quick.",2026-09-02
+3004,Laptop,"Would not recommend, the battery drains quickly and the refund took weeks.",2026-09-03
+3005,Phone,"Impressed, setup was easy and support was helpful.",2026-08-31
+3006,Headphones,"I love it, the noise cancelling is great.",2026-09-01
+3007,Laptop,"Impressed, the screen is beautiful and delivery was quick.",2026-09-02
+3008,Phone,"Very happy, the display is sharp.",2026-09-05
+3009,Headphones,"It is okay, sound is okay.",2026-09-03
+3010,Laptop,"Works well, the speakers are clear.",2026-09-05
+3011,Phone,"Average product, it has 128 GB storage.",2026-08-31
+3012,Headphones,"Disappointed, the headband broke.",2026-09-06
+3013,Laptop,"It is okay, it has a 15 inch screen.",2026-09-01
+3014,Phone,"It is okay, the box has a charger and cable.",2026-09-05
+3015,Headphones,"It is okay, sound is okay.",2026-09-06
+3016,Laptop,"Great buy, the screen is beautiful and delivery was quick.",2026-09-09
+3017,Phone,"Very frustrating, the screen cracked after a week and support was slow.",2026-09-08
+3018,Headphones,"I love it, the noise cancelling is great and delivery was quick.",2026-09-13
+3019,Laptop,"Impressed, performance is fast and delivery was quick.",2026-09-11
+3020,Phone,"Not happy, it overheats while charging and the refund took weeks.",2026-09-07
+3021,Headphones,"Average product, they come in a white box.",2026-09-13
+3022,Laptop,"Impressed, the keyboard feels great.",2026-09-08
+3023,Phone,"Would not recommend, the camera app freezes.",2026-09-07
+3024,Headphones,"Very happy, the battery lasts long and delivery was quick.",2026-09-07
+3025,Laptop,"Great buy, the keyboard feels great and delivery was quick.",2026-09-07
+3026,Phone,"Not happy, the camera app freezes and support was slow.",2026-09-07
+3027,Headphones,"Great buy, pairing was easy and delivery was quick.",2026-09-08
+3028,Laptop,"Works well, the speakers are clear.",2026-09-13
+3029,Phone,"Average product, the box has a charger and cable.",2026-09-13
+3030,Headphones,"Very happy, very comfortable to wear and support was helpful.",2026-09-12
+3031,Laptop,"Very happy, it is light to carry and delivery was quick.",2026-09-18
+3032,Phone,"Disappointed, the screen cracked after a week.",2026-09-14
+3033,Headphones,"Great buy, very comfortable to wear and support was helpful.",2026-09-19
+3034,Laptop,"Works well, the speakers are clear and delivery was quick.",2026-09-16
+3035,Phone,"I love it, setup was easy.",2026-09-17
+3036,Headphones,"Impressed, pairing was easy.",2026-09-16
+3037,Laptop,"Average product, it arrived on Tuesday.",2026-09-14
+3038,Phone,"Very frustrating, it keeps crashing.",2026-09-14
+3039,Headphones,"Terrible experience, the microphone is poor and support was slow.",2026-09-14
+3040,Laptop,"Works well, the keyboard feels great and support was helpful.",2026-09-19
+3041,Phone,"Impressed, setup was easy and support was helpful.",2026-09-14
+3042,Headphones,"Works well, the sound is amazing and support was helpful.",2026-09-16
+3043,Laptop,"I love it, the speakers are clear and support was helpful.",2026-09-14
+3044,Phone,"Great buy, good value for money.",2026-09-14
+3045,Headphones,"Would not recommend, bluetooth keeps disconnecting.",2026-09-19
+3046,Laptop,"Very happy, the keyboard feels great and delivery was quick.",2026-09-21
+3047,Phone,"I love it, the battery lasts all day.",2026-09-27
+3048,Headphones,"I love it, pairing was easy and support was helpful.",2026-09-24
+3049,Laptop,"I love it, the speakers are clear.",2026-09-21
+3050,Phone,"Disappointed, the battery dies by noon and the refund took weeks.",2026-09-26
+3051,Headphones,"Nothing special, the cable is one meter long.",2026-09-27
+3052,Laptop,"Impressed, the speakers are clear.",2026-09-23
+3053,Phone,"Works well, the camera is excellent.",2026-09-26
+3054,Headphones,"Would not recommend, the headband broke and delivery was late.",2026-09-21
+3055,Laptop,"Very happy, the speakers are clear.",2026-09-25
+3056,Phone,"Terrible experience, it overheats while charging and the refund took weeks.",2026-09-22
+3057,Headphones,"Just received it, they come in a white box.",2026-09-27
+3058,Laptop,"Very happy, performance is fast and delivery was quick.",2026-09-22
+3059,Phone,"Great buy, setup was easy.",2026-09-22
+3060,Headphones,"I love it, the noise cancelling is great and delivery was quick.",2026-09-27
+3061,Laptop,"Very frustrating, it freezes during work and delivery was late.",2026-09-29
+3062,Phone,"Works well, the display is sharp and delivery was quick.",2026-10-03
+3063,Headphones,"Nothing special, the cable is one meter long.",2026-10-04
+3064,Laptop,"Would not recommend, the battery drains quickly and delivery was late.",2026-10-02
+3065,Phone,"Would not recommend, the screen cracked after a week and support was slow.",2026-10-01
+3066,Headphones,"I love it, the sound is amazing.",2026-10-04
+3067,Laptop,"Disappointed, the battery drains quickly and the refund took weeks.",2026-09-28
+3068,Phone,"Great buy, the camera is excellent and support was helpful.",2026-09-29
+3069,Headphones,"Very frustrating, bluetooth keeps disconnecting and support was slow.",2026-10-03
+3070,Laptop,"Very frustrating, the charger stopped working.",2026-09-29
+3071,Phone,"Terrible experience, the camera app freezes and support was slow.",2026-10-01
+3072,Headphones,"Very happy, the noise cancelling is great and delivery was quick.",2026-10-03
+3073,Laptop,"Works well, it is light to carry.",2026-10-03
+3074,Phone,"I love it, the battery lasts all day and support was helpful.",2026-10-02
+3075,Headphones,"Impressed, the sound is amazing and delivery was quick.",2026-09-30
+3076,Laptop,"Very happy, the screen is beautiful and support was helpful.",2026-10-11
+3077,Phone,"I love it, setup was easy.",2026-10-08
+3078,Headphones,"Great buy, pairing was easy and delivery was quick.",2026-10-07
+3079,Laptop,"I love it, the keyboard feels great and support was helpful.",2026-10-05
+3080,Phone,"Terrible experience, the camera app freezes and the refund took weeks.",2026-10-11
+3081,Headphones,"It is okay, they come in a white box.",2026-10-08
+3082,Laptop,"Very happy, the speakers are clear and delivery was quick.",2026-10-10
+3083,Phone,"Very happy, the battery lasts all day.",2026-10-09
+3084,Headphones,"Impressed, the battery lasts long and delivery was quick.",2026-10-09
+3085,Laptop,"I love it, performance is fast and delivery was quick.",2026-10-09
+3086,Phone,"Impressed, setup was easy and support was helpful.",2026-10-09
+3087,Headphones,"Impressed, the sound is amazing and delivery was quick.",2026-10-10
+3088,Laptop,"Impressed, performance is fast and delivery was quick.",2026-10-11
+3089,Phone,"Would not recommend, the camera app freezes and delivery was late.",2026-10-09
+3090,Headphones,"Works well, pairing was easy.",2026-10-09
+3091,Laptop,"Very frustrating, the battery drains quickly.",2026-10-16
+3092,Phone,"Impressed, the display is sharp.",2026-10-15
+3093,Headphones,"Not happy, the left ear is crackling and the refund took weeks.",2026-10-15
+3094,Laptop,"Works well, the keyboard feels great.",2026-10-15
+3095,Phone,"Just received it, the box has a charger and cable.",2026-10-16
+3096,Headphones,"Average product, the cable is one meter long.",2026-10-14
+3097,Laptop,"Disappointed, the battery drains quickly and support was slow.",2026-10-13
+3098,Phone,"Terrible experience, the battery dies by noon and delivery was late.",2026-10-13
+3099,Headphones,"I love it, the battery lasts long and support was helpful.",2026-10-16
+3100,Laptop,"Would not recommend, the charger stopped working and delivery was late.",2026-10-17
+3101,Phone,"Would not recommend, it overheats while charging.",2026-10-15
+3102,Headphones,"Impressed, pairing was easy.",2026-10-16
+3103,Laptop,"Average product, it arrived on Tuesday.",2026-10-18
+3104,Phone,"Average product, I ordered it in black.",2026-10-13
+3105,Headphones,"Just received it, they come in a white box.",2026-10-18
+3106,Laptop,"I love it, performance is fast.",2026-10-20
+3107,Phone,"Great buy, the battery lasts all day.",2026-10-22
+3108,Headphones,"Works well, pairing was easy and support was helpful.",2026-10-20
+3109,Laptop,"It is okay, it has a 15 inch screen.",2026-10-23
+3110,Phone,"Great buy, the camera is excellent and support was helpful.",2026-10-23
+3111,Headphones,"Great buy, pairing was easy and support was helpful.",2026-10-25
+3112,Laptop,"Disappointed, it freezes during work.",2026-10-19
+3113,Phone,"Would not recommend, the camera app freezes and the refund took weeks.",2026-10-20
+3114,Headphones,"Disappointed, it stopped working after a month and support was slow.",2026-10-25
+3115,Laptop,"Terrible experience, the battery drains quickly.",2026-10-20
+3116,Phone,"Works well, the camera is excellent.",2026-10-21
+3117,Headphones,"Nothing special, sound is okay.",2026-10-22
+3118,Laptop,"Just received it, it has a 15 inch screen.",2026-10-25
+3119,Phone,"Very frustrating, it overheats while charging and delivery was late.",2026-10-24
+3120,Headphones,"Average product, sound is okay.",2026-10-19
+3121,Laptop,"I love it, the keyboard feels great.",2026-11-01
+3122,Phone,"Works well, the display is sharp and support was helpful.",2026-10-27
+3123,Headphones,"Great buy, the sound is amazing and delivery was quick.",2026-10-26
+3124,Laptop,"Very happy, it is light to carry.",2026-10-28
+3125,Phone,"Great buy, the battery lasts all day.",2026-10-29
+3126,Headphones,"Not happy, the left ear is crackling and delivery was late.",2026-10-28
+3127,Laptop,"I love it, the keyboard feels great and support was helpful.",2026-10-30
+3128,Phone,"Terrible experience, the battery dies by noon and delivery was late.",2026-10-27
+3129,Headphones,"Impressed, very comfortable to wear and support was helpful.",2026-10-26
+3130,Laptop,"Works well, performance is fast and support was helpful.",2026-10-26
+3131,Phone,"Impressed, the camera is excellent.",2026-10-30
+3132,Headphones,"Not happy, bluetooth keeps disconnecting and the refund took weeks.",2026-10-29
+3133,Laptop,"Very happy, it is light to carry.",2026-10-26
+3134,Phone,"Terrible experience, the battery dies by noon and the refund took weeks.",2026-10-30
+3135,Headphones,"I love it, the battery lasts long and support was helpful.",2026-10-26
+3136,Laptop,"I love it, it is light to carry.",2026-11-05
+3137,Phone,"Not happy, it overheats while charging.",2026-11-05
+3138,Headphones,"Works well, the sound is amazing and support was helpful.",2026-11-05
+3139,Laptop,"Great buy, the speakers are clear and delivery was quick.",2026-11-05
+3140,Phone,"Just received it, it has 128 GB storage.",2026-11-02
+3141,Headphones,"Not happy, the microphone is poor.",2026-11-07
+3142,Laptop,"Very frustrating, the battery drains quickly and delivery was late.",2026-11-07
+3143,Phone,"Would not recommend, the battery dies by noon.",2026-11-08
+3144,Headphones,"Works well, the battery lasts long and delivery was quick.",2026-11-08
+3145,Laptop,"It is okay, it arrived on Tuesday.",2026-11-03
+3146,Phone,"Very happy, the display is sharp and support was helpful.",2026-11-02
+3147,Headphones,"Very frustrating, the headband broke.",2026-11-03
+3148,Laptop,"Great buy, the speakers are clear.",2026-11-02
+3149,Phone,"Not happy, it overheats while charging and the refund took weeks.",2026-11-06
+3150,Headphones,"Nothing special, the cable is one meter long.",2026-11-04
+3151,Laptop,"Very happy, it is light to carry.",2026-11-13
+3152,Phone,"Impressed, the display is sharp and delivery was quick.",2026-11-11
+3153,Headphones,"Average product, sound is okay.",2026-11-15
+3154,Laptop,"Average product, it arrived on Tuesday.",2026-11-14
+3155,Phone,"Disappointed, the screen cracked after a week and delivery was late.",2026-11-11
+3156,Headphones,"Impressed, the noise cancelling is great.",2026-11-10
+3157,Laptop,"I love it, the screen is beautiful and support was helpful.",2026-11-10
+3158,Phone,"Terrible experience, it overheats while charging and the refund took weeks.",2026-11-11
+3159,Headphones,"Terrible experience, the headband broke and support was slow.",2026-11-15
+3160,Laptop,"I love it, it is light to carry and support was helpful.",2026-11-15
+3161,Phone,"Very happy, the battery lasts all day and delivery was quick.",2026-11-14
+3162,Headphones,"Average product, the cable is one meter long.",2026-11-14
+3163,Laptop,"Impressed, the keyboard feels great and delivery was quick.",2026-11-13
+3164,Phone,"Very happy, the battery lasts all day and support was helpful.",2026-11-11
+3165,Headphones,"Works well, the sound is amazing.",2026-11-13
+3166,Laptop,"Would not recommend, the charger stopped working and the refund took weeks.",2026-11-22
+3167,Phone,"Just received it, I ordered it in black.",2026-11-18
+3168,Headphones,"Would not recommend, the left ear is crackling and delivery was late.",2026-11-19
+3169,Laptop,"Great buy, the keyboard feels great.",2026-11-17
+3170,Phone,"Terrible experience, the battery dies by noon.",2026-11-18
+3171,Headphones,"Impressed, pairing was easy and support was helpful.",2026-11-18
+3172,Laptop,"Great buy, it is light to carry and delivery was quick.",2026-11-17
+3173,Phone,"Would not recommend, it keeps crashing.",2026-11-18
+3174,Headphones,"I love it, the sound is amazing and support was helpful.",2026-11-19
+3175,Laptop,"Very happy, the speakers are clear and delivery was quick.",2026-11-22
+3176,Phone,"Not happy, the camera app freezes and support was slow.",2026-11-17
+3177,Headphones,"Very frustrating, bluetooth keeps disconnecting.",2026-11-17
+3178,Laptop,"Impressed, performance is fast and support was helpful.",2026-11-18
+3179,Phone,"Works well, the camera is excellent and support was helpful.",2026-11-20
+3180,Headphones,"It is okay, the cable is one meter long.",2026-11-18

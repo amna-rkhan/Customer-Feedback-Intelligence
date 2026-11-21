@@ -1,0 +1,160 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RAG Assistant - Customer Feedback Intelligence</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 1000px; margin: 30px auto; padding: 0 16px; background: #f5f7fa; color: #222; }
+    h1 { font-size: 1.6rem; }
+    .card { background: #fff; border-radius: 8px; padding: 16px; margin-top: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+    .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; margin-top: 12px; }
+    .row label { font-size: .9rem; color: #444; display: block; margin-bottom: 4px; }
+    input[type=text] { width: 100%; padding: 10px; font-size: 1rem; box-sizing: border-box; }
+    select, button { padding: 8px 14px; font-size: 1rem; }
+    button { cursor: pointer; }
+    .btn { display: inline-block; background: #0b5cad; color: #fff; padding: 8px 16px; border-radius: 6px; text-decoration: none; }
+    .small { color: #666; font-size: .9rem; }
+    .badge { display: inline-block; background: #e8eef7; padding: 3px 10px; border-radius: 12px; font-size: .85rem; margin-right: 6px; }
+    .err { color: #c62828; font-weight: bold; }
+    .warn { color: #b26a00; }
+    .positive { color: #1a7f37; } .negative { color: #c62828; } .neutral { color: #b26a00; }
+    table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e5e5e5; vertical-align: top; }
+    th { background: #f0f3f8; }
+    .used { background: #eef7ee; }
+    .table-wrap { overflow-x: auto; }
+  </style>
+  <link rel="stylesheet" href="/static/theme.css">
+</head>
+<body>
+  <p><a class="btn" href="/">Back to dashboard</a></p>
+  <h1>RAG Assistant</h1>
+  <p class="small">
+    Answers use only the reviews retrieved from your uploaded CSV ({{ size }} reviews, {{ dimensions }} dimensions each).
+    Retrieval backend: <span class="badge">{{ backend }}</span>
+    Answer written by: <span class="badge">Azure AI Foundry</span>
+  </p>
+
+  <div class="card">
+    <label for="q">Your question</label>
+    <input type="text" id="q" maxlength="500" placeholder="e.g. Are there problems with delivery or support?">
+    <div class="row">
+      <div>
+        <label for="product">Product filter</label>
+        <select id="product">
+          <option value="">All products</option>
+          {% for p in products %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="topk">Top-K (reviews to retrieve)</label>
+        <select id="topk">
+          <option>3</option><option selected>5</option><option>8</option><option>10</option>
+        </select>
+      </div>
+      <div>
+        <label for="thr">Minimum similarity: <strong id="thrVal">0.25</strong></label>
+        <input type="range" id="thr" min="0" max="0.8" step="0.05" value="0.25">
+      </div>
+      <div><button type="button" id="ask">Ask</button></div>
+    </div>
+    <p id="status" class="small"></p>
+  </div>
+
+  <div class="card" id="answerCard" hidden>
+    <h2>Answer</h2>
+    <div id="answerBox"></div>
+    <p class="small">AI-generated. Always check the answer against the source reviews below.</p>
+  </div>
+
+  <div class="card" id="srcCard" hidden>
+    <h2>Retrieved source reviews</h2>
+    <p class="small">Score = cosine similarity (1.0 is closest). Highlighted rows were cited in the answer. Similarity measures topic, not whether a review is a complaint.</p>
+    <div class="table-wrap">
+      <table id="srcTable">
+        <thead><tr><th>Ref</th><th>Product</th><th>Sentiment</th><th>Similarity</th><th>Review</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const askUrl = {{ ('/rag/' ~ download_id ~ '/ask')|tojson }};
+    const $ = id => document.getElementById(id);
+
+    function add(tag, text, parent, cls) {
+      const el = document.createElement(tag);
+      el.textContent = text;            // textContent: review and model text never run as HTML
+      if (cls) el.className = cls;
+      parent.appendChild(el);
+      return el;
+    }
+
+    $("thr").addEventListener("input", () => { $("thrVal").textContent = Number($("thr").value).toFixed(2); });
+    $("q").addEventListener("keydown", e => { if (e.key === "Enter") ask(); });
+    $("ask").addEventListener("click", ask);
+
+    async function ask() {
+      const q = $("q").value.trim();
+      if (!q) { $("status").textContent = "Please type a question."; return; }
+      $("ask").disabled = true;
+      $("status").textContent = "Searching and generating... this can take 5 to 15 seconds.";
+      $("answerCard").hidden = true;
+      $("srcCard").hidden = true;
+      try {
+        const resp = await fetch(askUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: q, product: $("product").value,
+                                 top_k: Number($("topk").value), min_score: Number($("thr").value) })
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          $("status").textContent = data.error || "Could not get an answer.";
+          $("status").className = "err";
+          $("ask").disabled = false;
+          return;
+        }
+        $("status").className = "small";
+        $("status").textContent = "Retrieved " + data.hits.length + " review(s). " +
+          (data.llm_used ? "Answer generated by Azure AI Foundry." : "No model call was made (nothing to ground an answer on).");
+
+        const box = $("answerBox");
+        box.replaceChildren();
+        add("p", data.answer, box);
+        if (!data.enough_evidence) add("p", "The model reports that the evidence is not enough to answer fully.", box, "warn");
+        add("p", "Sources used: " + (data.sources.length ? data.sources.join(", ") : "none"), box, "small");
+        $("answerCard").hidden = false;
+
+        const body = $("srcTable").querySelector("tbody");
+        body.replaceChildren();
+        data.hits.forEach(h => {
+          const tr = document.createElement("tr");
+          if (data.sources.includes(h.ref)) tr.className = "used";
+          add("td", h.ref, tr);
+          add("td", h.product, tr);
+          add("td", (h.sentiment || "").toUpperCase(), tr, h.sentiment || "");
+          add("td", Number(h.score).toFixed(3), tr);
+          add("td", h.feedback, tr);
+          body.appendChild(tr);
+        });
+        if (data.hits.length === 0) {
+          const tr = document.createElement("tr");
+          const td = add("td", "No reviews were above the similarity threshold.", tr);
+          td.colSpan = 5;
+          body.appendChild(tr);
+        }
+        $("srcCard").hidden = false;
+      } catch (e) {
+        $("status").textContent = "Could not reach the server.";
+        $("status").className = "err";
+      }
+      $("ask").disabled = false;
+    }
+  </script>
+  <script src="/static/theme.js"></script>
+</body>
+</html>
+
+

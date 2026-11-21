@@ -1,0 +1,43 @@
+﻿/* motion.css: feedback and state motion. Loaded after theme.css */
+:root{--ease:cubic-bezier(.16,1,.3,1)}
+*{scrollbar-width:thin;scrollbar-color:#9fb0c6 transparent}
+body::before{padding-left:3.5rem;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231d4ed8'/%3E%3Crect x='5' y='12' width='3' height='7' rx='1' fill='white'/%3E%3Crect x='10.5' y='6' width='3' height='13' rx='1' fill='white'/%3E%3Crect x='16' y='9' width='3' height='10' rx='1' fill='white'/%3E%3C/svg%3E") no-repeat 1.2rem center/1.55rem 1.55rem,linear-gradient(90deg,#12263f,#173a6b)}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes msgin{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{50%{opacity:.45}}
+.card,.kpi{animation:rise .3s var(--ease) both}
+.kpi:nth-child(2){animation-delay:.04s}
+.kpi:nth-child(3){animation-delay:.08s}
+.kpi:nth-child(4){animation-delay:.12s}
+.kpi:nth-child(5){animation-delay:.16s}
+.card,.kpi{transition:box-shadow .2s var(--ease),border-color .2s}
+.card:hover,.kpi:hover{box-shadow:0 6px 20px rgba(15,28,46,.10);border-color:#c3cfdd}
+.kpi:has(.num.positive){background:var(--pos-soft);border-color:#c9e6d4}
+.kpi:has(.num.negative){background:var(--neg-soft);border-color:#efc2c2}
+.kpi:has(.num.neutral){background:var(--neu-soft);border-color:#f0d8a8}
+td.positive strong,td.negative strong,td.neutral strong{display:inline-block;padding:.12rem .65rem;border-radius:999px;font-size:.72rem;letter-spacing:.02em}
+td.positive strong{background:var(--pos-soft)}
+td.negative strong{background:var(--neg-soft)}
+td.neutral strong{background:var(--neu-soft)}
+button,.btn{transition:background .15s,border-color .15s,box-shadow .15s,transform .12s var(--ease)}
+button:active:not(:disabled),.btn:active{transform:scale(.97)}
+button[type=submit]:hover:not(:disabled),.btn:hover,#chatSend:hover:not(:disabled),#insightBtn:hover:not(:disabled){box-shadow:0 4px 12px rgba(29,78,216,.28)}
+button.is-loading::before{content:"";width:.9em;height:.9em;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;opacity:.85;animation:spin .7s linear infinite}
+button.is-loading:disabled{opacity:.8;cursor:progress}
+.msg{animation:msgin .24s var(--ease) both}
+.msg.user{transform-origin:100% 100%}
+.msg.bot,.msg.assistant{transform-origin:0 100%}
+.msg.thinking{color:var(--muted);animation:msgin .24s var(--ease) both,pulse 1.3s ease-in-out .3s infinite}
+button.to-top{position:fixed;right:max(1rem,env(safe-area-inset-right));bottom:max(1rem,env(safe-area-inset-bottom));width:2.75rem;height:2.75rem;padding:0;border-radius:50%;background:var(--navy);border-color:var(--navy);color:#fff;box-shadow:0 6px 18px rgba(15,28,46,.3);opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .2s,transform .25s var(--ease),background .15s;z-index:40}
+button.to-top.show{opacity:1;transform:none;pointer-events:auto}
+button.to-top:hover{background:var(--accent);border-color:var(--accent)}
+@media (prefers-reduced-motion:reduce){
+@keyframes rise{from{opacity:0}to{opacity:1}}
+@keyframes msgin{from{opacity:0}to{opacity:1}}
+button:active:not(:disabled),.btn:active{transform:none}
+button.to-top{transform:none}
+button.is-loading::before{animation-duration:1.8s}
+.msg.thinking{animation:msgin .24s both}
+}
+/* end motion.css */

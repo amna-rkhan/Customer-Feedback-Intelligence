@@ -1,0 +1,281 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Customer Feedback Intelligence - V4</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 1000px; margin: 30px auto; padding: 0 16px; background: #f5f7fa; color: #222; }
+    h1 { font-size: 1.6rem; }
+    .card { background: #fff; border-radius: 8px; padding: 16px; margin-top: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+    button { padding: 8px 18px; font-size: 1rem; cursor: pointer; }
+    .btn { display: inline-block; background: #0b5cad; color: #fff; padding: 8px 16px; border-radius: 6px; text-decoration: none; }
+    .error { color: #c62828; font-weight: bold; }
+    .note { color: #b26a00; }
+    .small { color: #666; font-size: .9rem; }
+    .kpis { display: flex; gap: 12px; flex-wrap: wrap; }
+    .kpi { flex: 1; min-width: 140px; background: #fff; border-radius: 8px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+    .kpi .num { font-size: 1.8rem; font-weight: bold; }
+    .kpi .lbl { color: #666; font-size: .9rem; }
+    .positive { color: #1a7f37; } .negative { color: #c62828; } .neutral { color: #b26a00; }
+    .charts { display: flex; gap: 16px; flex-wrap: wrap; }
+    .chart-box { flex: 1; min-width: 300px; position: relative; height: 300px; }
+    .table-wrap { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e5e5e5; vertical-align: top; }
+    th { background: #f0f3f8; }
+    #insights h3 { margin-bottom: 4px; }
+    #chatLog { border: 1px solid #ddd; border-radius: 6px; height: 280px; overflow-y: auto; padding: 10px; background: #fafbfc; }
+    .msg { margin: 8px 0; padding: 8px 12px; border-radius: 8px; max-width: 80%; white-space: pre-wrap; }
+    .msg.user { background: #dbeafe; margin-left: auto; }
+    .msg.bot { background: #eef0f3; }
+    .msg.err { background: #fde8e8; color: #c62828; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; } .chip { background: #fff; border: 1px solid #d9e1ea; border-radius: 999px; padding: 5px 12px; font-size: .82rem; cursor: pointer; } .chip:hover { border-color: #1d4ed8; background: #e3ebfd; } .chat-row { display: flex; gap: 8px; margin-top: 10px; }
+    .chat-row input { flex: 1; padding: 8px; font-size: 1rem; }
+  </style>
+  <link rel="stylesheet" href="/static/theme.css">
+</head>
+<body>
+  <h1>Customer Feedback Intelligence (V4)</h1>
+
+  <div class="card">
+    <form method="post" enctype="multipart/form-data">
+      <p>Upload a CSV with the columns <strong>customer_id, product, feedback</strong>.</p>
+      <input type="file" name="file" accept=".csv">
+      <button type="submit">Analyze</button>
+    </form>
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    {% if note %}<p class="note">{{ note }}</p>{% endif %}
+  </div>
+
+  {% if kpis %}
+  <h2>Key numbers</h2>
+  <div class="kpis">
+    <div class="kpi"><div class="num">{{ kpis.total }}</div><div class="lbl">Reviews analyzed</div></div>
+    <div class="kpi"><div class="num positive">{{ kpis.positive_pct }}%</div><div class="lbl">Positive</div></div>
+    <div class="kpi"><div class="num negative">{{ kpis.negative_pct }}%</div><div class="lbl">Negative</div></div>
+    <div class="kpi"><div class="num neutral">{{ kpis.neutral_pct }}%</div><div class="lbl">Neutral</div></div>
+    <div class="kpi"><div class="num">{{ kpis.avg_score }}</div><div class="lbl">Average score (-1 to +1)</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Charts</h2>
+    <div class="charts">
+      <div class="chart-box"><canvas id="sentimentChart"></canvas></div>
+      <div class="chart-box"><canvas id="productChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Product performance</h2>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Product</th><th>Reviews</th><th>Positive</th><th>Negative</th><th>Neutral</th><th>% Negative</th><th>Avg score</th></tr>
+        {% for p in products %}
+        <tr>
+          <td><strong>{{ p.product }}</strong></td>
+          <td>{{ p.total }}</td>
+          <td class="positive">{{ p.positive }}</td>
+          <td class="negative">{{ p.negative }}</td>
+          <td class="neutral">{{ p.neutral }}</td>
+          <td>{{ p.negative_pct }}%</td>
+          <td>{{ p.avg_score }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+
+  <div class="card" id="insights">
+    <h2>Executive insights</h2>
+    <p class="small">Written by an AI model (Azure AI Foundry) from the numbers above. All figures are calculated by Python.</p>
+    <button type="button" id="insightBtn">Generate executive insights</button>
+    <p id="insightStatus" class="small"></p>
+    <div id="insightResult"></div>
+  </div>
+
+  <div class="card" id="chatCard">
+    <h2>Ask about your feedback</h2>
+    <p class="small">Answers come only from the CSV you uploaded. AI-generated, so check important facts in the tables.</p>
+    <div id="chatLog"></div>
+    <div class="chips" id="chips"></div><div class="chat-row">
+      <input type="text" id="chatInput" maxlength="500" placeholder="e.g. What do customers say about the phone?">
+      <button type="button" id="chatSend">Send</button>
+      <button type="button" id="chatClear">Clear chat</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Results</h2>
+    {% if download_id %}<p><a class="btn" href="/download/{{ download_id }}">Download results (CSV)</a> <a class="btn" href="/deck/{{ download_id }}" onclick="this.textContent='Preparing deck, please wait...'">Download PowerPoint</a> <a class="btn" href="/rag/{{ download_id }}">Open RAG Assistant</a> <a class="btn" href="/agent/{{ download_id }}">Open AI Analyst</a> <a class="btn" href="/predict/{{ download_id }}">Open Predictions</a></p>{% endif %}
+    <div class="table-wrap">
+      <table>
+        <tr><th>ID</th><th>Product</th><th>Feedback</th><th>Sentiment</th><th>Score</th><th>Key phrases</th><th>Backend</th></tr>
+        {% for r in rows %}
+        <tr>
+          <td>{{ r.customer_id }}</td>
+          <td>{{ r.product }}</td>
+          <td>{{ r.feedback }}</td>
+          <td class="{{ r.sentiment }}"><strong>{{ r.sentiment|upper }}</strong></td>
+          <td>{{ r.score }}</td>
+          <td>{{ r.key_phrases }}</td>
+          <td>{{ r.backend }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='chart.umd.min.js') }}"></script>
+  <script>
+    const d = {{ chart_data|tojson }};
+    const green = "#1a7f37", red = "#c62828", amber = "#e0a030";
+
+    new Chart(document.getElementById("sentimentChart"), {
+      type: "doughnut",
+      data: { labels: ["Positive", "Negative", "Neutral"],
+              datasets: [{ data: d.sentiment, backgroundColor: [green, red, amber] }] },
+      options: { maintainAspectRatio: false, devicePixelRatio: Math.max(window.devicePixelRatio || 1, 2),
+                 plugins: { title: { display: true, text: "Overall sentiment" } } }
+    });
+
+    new Chart(document.getElementById("productChart"), {
+      type: "bar",
+      data: { labels: d.products,
+              datasets: [
+                { label: "Positive", data: d.positive, backgroundColor: green },
+                { label: "Negative", data: d.negative, backgroundColor: red },
+                { label: "Neutral", data: d.neutral, backgroundColor: amber } ] },
+      options: { maintainAspectRatio: false, devicePixelRatio: Math.max(window.devicePixelRatio || 1, 2),
+                 plugins: { title: { display: true, text: "Sentiment by product" } },
+                 scales: { x: { stacked: true },
+                           y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } } } }
+    });
+
+    function add(tag, text, parent) {
+      const el = document.createElement(tag);
+      el.textContent = text;       // textContent: model text is never run as HTML
+      if (arguments[3]) el.className = arguments[3]; parent.appendChild(el);
+      return el;
+    }
+
+    // ---- Executive insights ----
+    const reportUrl = {{ ('/report/' ~ download_id)|tojson }};
+    const btn = document.getElementById("insightBtn");
+    const statusEl = document.getElementById("insightStatus");
+    const out = document.getElementById("insightResult");
+
+    function render(data) {
+      out.innerHTML = "";
+      add("h3", "Summary", out);
+      add("p", data.summary, out);
+      add("h3", "Key complaints", out);
+      const ul = add("ul", "", out);
+      data.complaints.forEach(c => add("li", c, ul));
+      add("h3", "Recommendations", out);
+      const ul2 = add("ul", "", out);
+      data.recommendations.forEach(r => add("li", r.product + ": " + r.action, ul2));
+    }
+
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      out.innerHTML = "";
+      statusEl.textContent = "Generating... this can take 10 to 20 seconds.";
+      try {
+        const resp = await fetch(reportUrl, { method: "POST" });
+        const data = await resp.json();
+        if (!resp.ok) {
+          statusEl.textContent = data.error || "Could not generate the report.";
+          btn.disabled = false;
+          return;
+        }
+        render(data);
+        statusEl.textContent = "AI-generated text. Please check it against the numbers before sharing.";
+        btn.textContent = "Regenerate";
+        btn.disabled = false;
+      } catch (e) {
+        statusEl.textContent = "Could not reach the server.";
+        btn.disabled = false;
+      }
+    });
+
+    // ---- Chatbot ----
+
+    const chatUrl = {{ ('/chat/' ~ download_id)|tojson }};
+    const log = document.getElementById("chatLog");
+    const input = document.getElementById("chatInput");
+    const sendBtn = document.getElementById("chatSend");
+    const clearBtn = document.getElementById("chatClear");
+    const chips = document.getElementById("chips");
+    let history = [];   // kept in the browser; the last 10 messages are sent each time
+
+    const worst = d.products[d.products.length - 1];
+    ["Which product has the most negative reviews?", "What do customers praise most?",
+     "What should we fix first?", "What do customers say about " + worst + "?"].forEach(q => {
+      const c = add("button", q, chips, "chip");
+      c.type = "button";
+      c.addEventListener("click", () => { input.value = q; sendQuestion(); });
+    });
+
+    function bubble(kind, text) {
+      const hint = document.getElementById("chatHint");
+      if (hint) hint.remove();
+      const el = add("div", text, log, "msg " + kind);
+      log.scrollTop = log.scrollHeight;
+      return el;
+    }
+
+    async function sendQuestion() {
+      const q = input.value.trim();
+      if (!q || sendBtn.disabled) return;
+      input.value = "";
+      bubble("user", q);
+      const waiting = bubble("bot", "Thinking\u2026");
+      sendBtn.disabled = true;
+      sendBtn.classList.add("loading");
+      try {
+        const resp = await fetch(chatUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: q, history: history.slice(-10) })
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          waiting.className = "msg err";
+          waiting.textContent = data.error || "Could not get an answer.";
+        } else {
+          waiting.textContent = data.answer;
+          history.push({ role: "user", content: q });
+          history.push({ role: "assistant", content: data.answer });
+        }
+      } catch (e) {
+        waiting.className = "msg err";
+        waiting.textContent = "Could not reach the server.";
+      }
+      sendBtn.disabled = false;
+      sendBtn.classList.remove("loading");
+      input.focus();
+      log.scrollTop = log.scrollHeight;
+    }
+
+    sendBtn.addEventListener("click", sendQuestion);
+    input.addEventListener("keydown", e => { if (e.key === "Enter") sendQuestion(); });
+    clearBtn.addEventListener("click", () => {
+      history = [];
+      log.replaceChildren();
+      add("div", "Chat cleared. Ask a new question.", log, "hint").id = "chatHint";
+      input.focus();
+    });
+  </script>
+  {% endif %}
+  <script src="/static/theme.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
